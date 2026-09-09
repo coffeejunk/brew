@@ -169,7 +169,9 @@ class Sandbox
       begin
         yield
       ensure
-        brew_directory.chmod brew_directory_mode
+        # A user who does not own the directory cannot restore its mode, and
+        # cannot have changed it inside the sandbox either.
+        brew_directory.chmod brew_directory_mode if (brew_directory.stat.mode & 07777) != brew_directory_mode
         if symlink && (!brew_file.symlink? || brew_file.readlink.to_s != contents)
           FileUtils.rm_rf brew_file
           brew_file.make_symlink contents
